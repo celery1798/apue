@@ -1,0 +1,40 @@
+
+fd1 = open();
+if(fd1 < 0)
+{
+	perror();
+	exit(1);
+}
+
+
+fd2 = open();
+if(fd2 < 0)
+{
+	close(fd1);
+	perror();
+	exit(1);
+}
+
+malloc() * 100;
+
+....  
+
+fd100 = open();
+if(fd100 < 0)
+{
+	close(fd1);
+	close(fd2);
+	close(fd3);
+	...
+	close(fd99);
+	free();
+	free();
+	free();
+	perror();
+	exit(1);
+}
+
+
+
+
+
