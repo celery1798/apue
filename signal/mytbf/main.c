@@ -6,6 +6,9 @@
 #include <unistd.h>
 #include <errno.h>
 #include <signal.h>
+#include <string.h>
+
+#include "mytbf.h"
 
 #define BUFSIZE		1024	
 #define CPS			10
@@ -15,7 +18,7 @@ int main(int argc,char **argv)
 {
 	int sfd,dfd = 1;
 	char buf[BUFSIZE];
-	int len,ret,pos;
+	int len,ret,pos,size;
 	mytbf_t *tbf;		
 
 	if(argc < 2)
@@ -25,9 +28,10 @@ int main(int argc,char **argv)
 	}
 
 	tbf = mytbf_init(CPS,BURST);
-	if(    )
+	if(tbf == NULL)
 	{
-
+		fprintf(stderr,"mytbf_init() error!\n");
+		exit(1);
 	}
 
 	do
@@ -47,10 +51,11 @@ int main(int argc,char **argv)
 	while(1)
 	{
 
-		size = mytbf_fetchtoken(tbf,BUFSIZE);
-		if(		)
+		size = mytbf_fetchtoken(tbf,-BUFSIZE);
+		if(size < 0)
 		{
-		
+			fprintf(stderr,"mytbf_fetchtoken():%s.\n",strerror(-size));
+			exit(1);
 		}
 
 
@@ -80,7 +85,7 @@ int main(int argc,char **argv)
 					if(errno == EINTR)
 						continue;
 					perror("write()");
-					break;
+					exit(1);
 				}
 				pos += ret;
 				len -= ret;
