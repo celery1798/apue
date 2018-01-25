@@ -7,38 +7,28 @@
 #include <errno.h>
 #include <signal.h>
 
-#define BUFSIZE		CPS	
+#define BUFSIZE		1024	
 #define CPS			10
 #define BURST		1000
-
-static volatile int	token = 0;
-
-void alrm_handler(int s)
-{
-	alarm(1);
-
-	token++;
-//  token += cps;
-	if(token > BURST)
-		token = BURST;
-}
 
 int main(int argc,char **argv)
 {
 	int sfd,dfd = 1;
 	char buf[BUFSIZE];
 	int len,ret,pos;
-		
+	mytbf_t *tbf;		
+
 	if(argc < 2)
 	{
 		fprintf(stderr,"Usage: %s <srcfile> <destfile>\n",argv[0]);
 		exit(1);
 	}
 
+	tbf = mytbf_init(CPS,BURST);
+	if(    )
+	{
 
-	signal(SIGALRM,alrm_handler);
-	alarm(1);
-
+	}
 
 	do
 	{
@@ -57,13 +47,14 @@ int main(int argc,char **argv)
 	while(1)
 	{
 
-		while(token <= 0)
-			pause();
-		token--;
-//		token-=BUFSIZE;
+		size = mytbf_fetchtoken(tbf,BUFSIZE);
+		if(		)
+		{
+		
+		}
 
 
-		while((len = read(sfd,buf,BUFSIZE)) < 0)	
+		while((len = read(sfd,buf,size)) < 0)	
 		{
 			if(errno == EINTR)
 				continue;
@@ -73,8 +64,11 @@ int main(int argc,char **argv)
 		if(len == 0)
 			break;
 		
-//		if(BUFSIZE-len > 0)
-//			token+=BUFSIZE-len;
+
+
+		if(size-len > 0)
+			mytbf_returntoken(tbf,size-len);
+
 
 
 		pos = 0;
@@ -95,6 +89,9 @@ int main(int argc,char **argv)
 	}
 
 	close(sfd);
+
+	mytbf_destroy(tbf);
+
 
 	exit(0);
 }
