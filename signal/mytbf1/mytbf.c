@@ -16,15 +16,17 @@ struct mytbf_st
 	int pos;
 };
 
-typedef void (*sighandler_t)(int);
 
 static struct mytbf_st *job[MYTBF_MAX];
 static int inited = 1;
-static sighandler_t alrm_handler_save;
+static struct sigaction osa;
 
-static void alrm_handler(int s)
+static void alrm_sa(int s,siginfo_t *infop, void *unused)
 {
 	int i;
+
+	if(infop->si_code != SI_KERNEL)
+		return ;
 
 	for(i = 0 ; i < MYTBF_MAX; i++)
 	{
@@ -52,8 +54,9 @@ static void module_unload(void)
         exit(1);
     }
 
-	signal(SIGALRM,alrm_handler_save);
-
+	sigaction(SIGALRM,&osa,NULL);
+	/*if error*/
+	
 	for(i = 0 ; i < MYTBF_MAX; i++)
 		free(job[i]);
 }
@@ -61,8 +64,16 @@ static void module_unload(void)
 static void module_load(void)
 {
 	struct itimerval itv;
+	struct sigaction sa;
 
-	alrm_handler_save = signal(SIGALRM,alrm_handler);
+	sa.sa_sigaction = alrm_sa;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = SA_SIGINFO;
+	if(sigaction(SIGALRM,&sa,&osa) < 0)
+	{
+		perror("sigaction()");
+		exit(1);
+	}
 	
 	itv.it_interval.tv_sec = 1;
 	itv.it_interval.tv_usec = 0;
