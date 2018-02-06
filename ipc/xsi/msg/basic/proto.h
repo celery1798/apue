@@ -3,6 +3,8 @@
 
 #define NAMESIZE	32
 
+#define MSGTYPE		6
+
 #define KEYPATH		"/etc/services"
 #define KEYPROJ		'x'
 

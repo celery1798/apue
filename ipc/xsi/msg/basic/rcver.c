@@ -34,11 +34,13 @@ int main()
 			exit(1);
 		}
 
-		printf("NAME = %s\n",rbuf.name);
-		printf("MATH = %d\n",rbuf.math);
-		printf("CHINESE = %d\n",rbuf.chinese);
+		if(rbuf.mtype == MSGTYPE)
+		{
+			printf("NAME = %s\n",rbuf.name);
+			printf("MATH = %d\n",rbuf.math);
+			printf("CHINESE = %d\n",rbuf.chinese);
+		}
 	}
-
 	msgctl(msgid,IPC_RMID,NULL);
 
 
