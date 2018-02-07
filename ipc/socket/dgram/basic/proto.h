@@ -5,8 +5,6 @@
 
 #define RCVPORT		"1989"
 
-
-
 struct msg_st
 {
 	uint8_t name[NAMESIZE];
