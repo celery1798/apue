@@ -7,6 +7,7 @@
 #include <string.h>
 #include <time.h>
 #include <errno.h>
+#include <sys/wait.h>
 
 #include "proto.h"
 
@@ -23,6 +24,8 @@ void server_job(int sd)
 	
 	len = sprintf(buf,FMT_STAMP,(long long)time(NULL));
 	
+	sleep(5);
+
 	if(send(sd,buf,len,0) < 0)
 	{
 		perror("send()");
@@ -31,12 +34,40 @@ void server_job(int sd)
 
 }
 
-int main()
+void server_loop(int sd)
 {
-	int sd,newsd;
-	struct sockaddr_in laddr,raddr;
+	int newsd;
+	struct sockaddr_in raddr;
 	socklen_t raddr_len;
 	char ipstr[STRSIZE];
+
+	raddr_len = sizeof(raddr);
+
+    while(1)
+    {
+        newsd = accept(sd,(void *)&raddr,&raddr_len);
+        if(newsd < 0)
+        {
+            if(errno == EINTR)
+                continue;
+            perror("accept()");
+            exit(1);
+        }
+
+        inet_ntop(AF_INET,&raddr.sin_addr,ipstr,STRSIZE);
+        printf("Client--%s:%d\n",ipstr,ntohs(raddr.sin_port));
+        server_job(newsd);
+        close(newsd);
+    }
+
+}
+
+
+int main()
+{
+	int sd,n;
+	pid_t pid;
+	struct sockaddr_in laddr;
 
 	sd = socket(AF_INET,SOCK_STREAM,0 /*IPPROTO_TCP,IPPROTO_SCTP*/);
 	if(sd < 0)
@@ -68,30 +99,31 @@ int main()
 		exit(1);
 	}
 
-	raddr_len = sizeof(raddr);
 
-	while(1)
+	for(n = 0 ; n < N; n++)
 	{
-		newsd = accept(sd,(void *)&raddr,&raddr_len);
-		if(newsd < 0)
+		pid = fork();
+		if(pid < 0)
 		{
-			if(errno == EINTR)
-				continue;
-			perror("accept()");
+			perror("fork()");
 			exit(1);
 		}
+		if(pid == 0)	// child
+		{
+			server_loop(sd);
+			exit(0);
+		}
 
-		inet_ntop(AF_INET,&raddr.sin_addr,ipstr,STRSIZE);		
-		printf("Client--%s:%d\n",ipstr,ntohs(raddr.sin_port));
-		server_job(newsd);
-		close(newsd);
 	}
 
-	close(sd);
 
+	for(n = 0 ; n < N; n++)
+		wait(NULL);
 
 	exit(0);
-}
+
+}	
+
 
 
 
