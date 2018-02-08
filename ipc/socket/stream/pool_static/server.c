@@ -13,6 +13,8 @@
 #define BUFSIZE		1024
 #define STRSIZE		1024
 
+#define N			4
+
 
 void server_job(int sd)
 {

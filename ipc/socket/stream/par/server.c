@@ -21,6 +21,8 @@ void server_job(int sd)
 	
 	len = sprintf(buf,FMT_STAMP,(long long)time(NULL));
 	
+	sleep(5);
+
 	if(send(sd,buf,len,0) < 0)
 	{
 		perror("send()");
@@ -35,6 +37,7 @@ int main()
 	struct sockaddr_in laddr,raddr;
 	socklen_t raddr_len;
 	char ipstr[STRSIZE];
+	pid_t pid;
 
 	sd = socket(AF_INET,SOCK_STREAM,0 /*IPPROTO_TCP,IPPROTO_SCTP*/);
 	if(sd < 0)
@@ -79,9 +82,22 @@ int main()
 			exit(1);
 		}
 
-		inet_ntop(AF_INET,&raddr.sin_addr,ipstr,STRSIZE);		
-		printf("Client--%s:%d\n",ipstr,ntohs(raddr.sin_port));
-		server_job(newsd);
+		pid = fork();
+		if(pid < 0)
+		{
+			perror("fork()");
+			exit(1);
+		}
+		if(pid == 0)	// child
+		{
+			close(sd);
+			inet_ntop(AF_INET,&raddr.sin_addr,ipstr,STRSIZE);		
+			printf("Client--%s:%d\n",ipstr,ntohs(raddr.sin_port));
+			server_job(newsd);
+			close(newsd);
+			exit(0);
+		}
+		//parent
 		close(newsd);
 	}
 
