@@ -6,6 +6,8 @@
 #include "proto.h"
 #include "qcryptographichash.h"
 #include "qudpsocket.h"
+#include "qdebug.h"
+
 
 LogIn::LogIn(QWidget *parent) :
     QWidget(parent),
@@ -86,21 +88,22 @@ void LogIn::on_pushButton_clicked()
     QString name = ui->nameLineEdit->text();
     QString pw = ui->pwLineEdit->text();
 
-    QByteArray ba = pw.toLatin1();
+     QByteArray ba = pw.toLatin1();
     ba = QCryptographicHash::hash(ba,QCryptographicHash::Md5);
-    pw.clear();
-    pw.append(ba.toHex());
 
-    const char *u = name.toStdString().c_str();
-    const char *p = pw.toStdString().c_str();
+    const char *p = ba.toHex().data();
+    const char *u = name.toLatin1().data();
+
+    /**************************************************************/
+    //  const char *u = name.toStdString().c_str();
+    /**************************************************************/
 
     qsnprintf(dl.uname,SIZE,u);
     qsnprintf(dl.password,SIZE,p);
 
     QHostAddress *addr = new QHostAddress(QString(DEFAULT_SERVER_IP));
 
-    socket->writeDatagram((const char *)&dl,sizeof(dl),*addr,DEFAULT_SERVER_PORT);
-
+    socket->writeDatagram((const char *)&dl,sizeof(dl),*addr,DENGLU_SERVER_PORT);
 
  }
 
