@@ -6,8 +6,8 @@
 #include <unistd.h>
 #include <string.h>
 
-//#include "../include/proto.h"
-#include <proto.h>
+#include "../include/proto.h"
+//#include <proto.h>
 
 int main(int argc,char **argv)
 {
@@ -24,7 +24,7 @@ int main(int argc,char **argv)
     }
 
 	laddr.sin_family = AF_INET;
-    laddr.sin_port = htons(DEFAULT_SERVER_PORT);
+    laddr.sin_port = htons(DENGLU_SERVER_PORT);
     inet_pton(AF_INET,DEFAULT_SERVER_IP,&laddr.sin_addr);
     if(bind(sd,(void *)&laddr,sizeof(laddr)) < 0)
     {
@@ -34,25 +34,29 @@ int main(int argc,char **argv)
 	
 	raddr_len = sizeof(raddr);
 
-	if(recvfrom(sd,&dl,sizeof(dl),0,(void *)&raddr,&raddr_len) < 0)
-    {
-         perror("recvfrom()");
-         exit(1);
-    }
-
-	// 去数据库中验证用户信息的真实性
-
-	dl.status = DENGLU_STATUS_ERROR;
-	if(sendto(sd,&dl,sizeof(dl),0,(void *)&raddr,sizeof(raddr)) < 0)
+	while(1)
 	{
-		perror("sendto()");
-		exit(1);
+		if(recvfrom(sd,&dl,sizeof(dl),0,(void *)&raddr,&raddr_len) < 0)
+		{
+			perror("recvfrom()");
+			exit(1);
+		}
+
+		ret = sqlite_chkckmsg(&dl);
+		if(ret == 0)
+			dl.status = DENGLU_STATUS_OK;
+		else
+			dl.status = DENGLU_STATUS_ERROR;
+
+		if(sendto(sd,&dl,sizeof(dl),0,(void *)&raddr,sizeof(raddr)) < 0)
+		{
+			perror("sendto()");
+			exit(1);
+		}
+
+		puts("ok!");
+
 	}
-
-	puts("ok!");
-
-
-	while(1);
 
 
 	close(sd);
