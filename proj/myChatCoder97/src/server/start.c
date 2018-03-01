@@ -26,6 +26,12 @@ int main()
         exit(1);
 	}
 
+	fork();
+
+		execl("./addfriend"  ,   );
+
+
+
 	while(1)
 	{
 		pid = wait(NULL);
