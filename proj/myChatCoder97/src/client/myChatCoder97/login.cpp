@@ -53,7 +53,8 @@ LogIn::LogIn(QWidget *parent) :
          // 登陆信息有效启动letsChat
             letchat = new letsChat();
             letchat->setAttribute(Qt::WA_DeleteOnClose);
-            letchat->show();
+       //   letchat->show();
+            letchat->myLetsChatShow(QString(ui->nameLineEdit->text()));
             close();
             break;
 

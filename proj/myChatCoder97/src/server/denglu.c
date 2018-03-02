@@ -10,6 +10,8 @@
 #include <proto.h>
 
 
+#if 0
+
 int create_table_for_onlineuser()
 {
 	ret = sqlite3_open("./mychat.sqlite",&db);
@@ -75,6 +77,7 @@ save_addrtotable(struct sockaddr_in *raddr)
 
 }
 
+#endif
 
 int sqlite_chkckdenglu(struct denglu_st *dl)
 {
@@ -140,7 +143,7 @@ int main(int argc,char **argv)
     }
 	
 	//创建数据库
-	create_table_for_onlineuser();
+//	create_table_for_onlineuser();
 
 
 	raddr_len = sizeof(raddr);
@@ -161,7 +164,7 @@ int main(int argc,char **argv)
 			dl.status = DENGLU_STATUS_OK;
 
 			//将当前用户的地址信息写入数据库的onlineuser表中
-			save_addrtotable(&raddr);
+//			save_addrtotable(&raddr);
 		
 
 		}

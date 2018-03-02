@@ -13,10 +13,18 @@ class letsChat : public QDialog
 
 public:
     explicit letsChat(QWidget *parent = 0);
+    void myLetsChatShow(QString uname);
     ~letsChat();
 
+private slots:
+    void on_friendList_doubleClicked(const QModelIndex &index);
+
+    void on_pushButton_4_clicked();
+
 private:
+    QString myuname;
     Ui::letsChat *ui;
 };
 
 #endif // LETSCHAT_H
+
